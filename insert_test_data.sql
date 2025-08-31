@@ -27,12 +27,16 @@ values('ALONSO ','VELOZA'),
 ('PEDRO ','CORDERO'),
 ('ROCIO ','VELOZA');
 
+INSERT INTO Revolving (loan_id, user_id,monto, fecha_creacion)
+VALUES(14, 6, 1500000,	TO_DATE('28/2/2025', 'DD/MM/YYYY')),
+(14, 6,  355000,	TO_DATE('30/4/2025', 'DD/MM/YYYY')),
+(14, 6, 1050000,	TO_DATE('30/6/2025', 'DD/MM/YYYY'));
 
 
 INSERT INTO Loans (user_id,monto, fecha_creacion,  numero_cuotas, tasa_interes_ea)
 VALUES (3,	3000000,	TO_DATE('18/10/2024', 'DD/MM/YYYY'),   12, 12*0.03),	
        (9,	5000000,	TO_DATE('18/10/2024', 'DD/MM/YYYY'),   12, 12*0.03),	
-       (11, 	2500000,	TO_DATE('19/10/2024', 'DD/MM/YYYY'),   12, 12*0.03),	
+       (11, 	2500000,	TO_DATE('19/10/2024', 'DD/MM/YYYY'),   12, 12*0.02),	
        (1,	5800000,	TO_DATE('21/10/2024', 'DD/MM/YYYY'),   12, 12*0.015),	
        (8,	16075383,	TO_DATE('21/10/2024', 'DD/MM/YYYY'),   24, 12*0.02),	
        (14,	2000000,	TO_DATE('30/10/2024', 'DD/MM/YYYY'),   12, 12*0.03),	

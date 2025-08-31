@@ -1,5 +1,5 @@
 
-drop table if exists  users, payments, loans, loantape;  
+drop table if exists  users, payments, loans, loantape, revolving;  
 
 drop type if exists ENUM_ESTADO_PAGO;
 
@@ -30,6 +30,16 @@ CREATE TABLE Loans (
 
 
 
+CREATE TABLE Revolving (
+
+    loan_id int,
+    user_id int, 
+    fecha_creacion date NOT NULL DEFAULT CURRENT_DATE, 
+    monto float
+);
+
+
+
 CREATE TABLE Payments (
     payment_id serial PRIMARY KEY,
     usuario_id int,
@@ -50,6 +60,7 @@ CREATE TABLE LoanTape (
     monto_pago float,
     abono_capital float,
     abono_intereses float,
+    monto_rotativo float,
     saldo_nuevo_capital float,
     saldo_nuevo_intereses float,
     

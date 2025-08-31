@@ -12,7 +12,7 @@ FOR fecha_analysis IN SELECT generate_series(min_date, max_date, '1 day'::interv
 
 
 
-drop table if exists  all_loans, old_loans, new_loans, aggregated_payments, payment_calculation, payment_loan_indformation;
+drop table if exists  all_loans, old_loans, new_loans, aggregated_payments, payment_calculation, payment_calculation_1, aggregated_revolving, revolving_calculation;
 
 delete from loantape where fecha = fecha_analysis;
 
@@ -52,6 +52,9 @@ select date(fecha_pago) as fecha_pago, loan_id, sum(monto) as monto_pago from pa
 group by date(fecha_pago), loan_id;
 
 
+create table aggregated_revolving as 
+select fecha_creacion, loan_id, sum(monto) as monto_a_sumar from revolving where fecha_creacion = date(fecha_analysis)
+group by fecha_creacion, loan_id;
 
 
 create table payment_calculation as 
@@ -72,8 +75,9 @@ select l.loan_id,
   on ol.loan_id = l.loan_id;
  
  
-insert into LoanTape(loan_id, fecha, saldo_anterior_capital,saldo_anterior_intereses,intereses_periodo,   monto_pago, abono_capital, abono_intereses, saldo_nuevo_capital, saldo_nuevo_intereses )
-select loan_id, fecha, saldo_anterior_capital,
+
+ create table payment_calculation_1 as 
+ select loan_id, fecha, saldo_anterior_capital,
        saldo_anterior_intereses,
        intereses_periodo, 
 	   monto_pago,
@@ -81,9 +85,26 @@ select loan_id, fecha, saldo_anterior_capital,
 	   abono_intereses, 
 	   case when monto_pago > 0 then saldo_anterior_capital - abono_capital else saldo_anterior_capital end as saldo_nuevo_capital,
 	   case when monto_pago > 0 then saldo_anterior_intereses - abono_intereses + intereses_periodo else saldo_anterior_intereses + intereses_periodo  end as saldo_nuevo_intereses
-	   
 from payment_calculation;
 
+create table revolving_calculation as 
+select p.loan_id,
+	   p.fecha,
+	   p.saldo_anterior_capital,
+       p.saldo_anterior_intereses,
+       p.intereses_periodo, 
+	   p.monto_pago,
+	   p.abono_capital, 
+	   p.abono_intereses,
+	   coalesce(r.monto_a_sumar,0) as monto_rotativo, 
+	   p.saldo_nuevo_capital + coalesce(r.monto_a_sumar,0) as saldo_nuevo_capital,
+	   p.saldo_nuevo_intereses
+	   from payment_calculation_1 as p left join aggregated_revolving as r 
+on p.loan_id = r.loan_id and p.fecha = r.fecha_creacion;
+ 
+ 
+insert into LoanTape(loan_id, fecha, saldo_anterior_capital,saldo_anterior_intereses,intereses_periodo,   monto_pago, abono_capital, abono_intereses, monto_rotativo, saldo_nuevo_capital, saldo_nuevo_intereses )
+select * from revolving_calculation; 
 
 END LOOP;
 end; $$
