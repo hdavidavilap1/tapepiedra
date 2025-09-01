@@ -25,7 +25,7 @@ create table new_loans as
 SELECT loan_id,
        fecha_analysis as fecha,
        monto as saldo_anterior_capital,
-       0 as saldo_anterior_intereses, -- note maybe require to genetate interest for one day
+       monto *(tasa_interes_ea/num_days) as saldo_anterior_intereses, -- note maybe require to genetate interest for one day
        0 as monto_pago, 
        0 as abono_capital, 
        0 as abono_intereses, 
@@ -69,9 +69,12 @@ select l.loan_id,
 	   saldo_anterior_capital *(ol.tasa_interes_ea/num_days) as intereses_periodo,
 	   coalesce(p.monto_pago,0) as monto_pago,
 	   case when p.monto_pago > 0 then greatest(p.monto_pago - saldo_anterior_intereses -  saldo_anterior_capital *(ol.tasa_interes_ea/num_days),0) else 0 end  as abono_capital, 
+	   
 	   case when p.monto_pago > 0 then least(p.monto_pago ,saldo_anterior_intereses + saldo_anterior_capital *(ol.tasa_interes_ea/num_days)) else 0 end  as abono_intereses,
+	   
 	   0 as saldo_nuevo_capital,
-       0 as saldo_nuevo_intereses
+       0 as saldo_nuevo_intereses,
+       ol.tasa_interes_ea as tasa_interes
   from all_loans as l 
   left join aggregated_payments as p 	
   on l.loan_id = p.loan_id and date(l.fecha) = date(p.fecha_pago)
@@ -88,7 +91,8 @@ select l.loan_id,
 	   abono_capital, 
 	   abono_intereses, 
 	   case when monto_pago > 0 then saldo_anterior_capital - abono_capital else saldo_anterior_capital end as saldo_nuevo_capital,
-	   case when monto_pago > 0 then saldo_anterior_intereses - abono_intereses + intereses_periodo else saldo_anterior_intereses + intereses_periodo  end as saldo_nuevo_intereses
+	   case when monto_pago > 0 then saldo_anterior_intereses - abono_intereses + intereses_periodo else saldo_anterior_intereses + intereses_periodo  end as saldo_nuevo_intereses,
+	   tasa_interes
 from payment_calculation;
 
 create table revolving_calculation as 
@@ -101,7 +105,7 @@ select p.loan_id,
 	   p.abono_capital, 
 	   p.abono_intereses,
 	   coalesce(r.monto_a_sumar,0) as monto_rotativo, 
-	   p.saldo_nuevo_capital + coalesce(r.monto_a_sumar,0) as saldo_nuevo_capital,
+	   case when(p.saldo_nuevo_capital + coalesce(r.monto_a_sumar,0))<p.intereses_periodo*3 then 0 else p.saldo_nuevo_capital + coalesce(r.monto_a_sumar,0) end as saldo_nuevo_capital,
 	   p.saldo_nuevo_intereses
 	   from payment_calculation_1 as p left join aggregated_revolving as r 
 on p.loan_id = r.loan_id and p.fecha = r.fecha_creacion;

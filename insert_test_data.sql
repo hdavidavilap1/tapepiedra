@@ -50,7 +50,7 @@ VALUES (3,	3000000,	TO_DATE('18/10/2024', 'DD/MM/YYYY'),   12, 0.03),
        (6,	2500000,	TO_DATE('31/01/2025', 'DD/MM/YYYY'),   24, 0.03),	
        (7,	3000000,	TO_DATE('07/01/2025', 'DD/MM/YYYY'),   12, 0.03),	
        (13,	4000000,	TO_DATE('09/10/2024', 'DD/MM/YYYY'),   12, 0.03),	
-       (4,	6000000,	TO_DATE('11/04/2025', 'DD/MM/YYYY'),   2,  0.03),	
+       (4,	6000000,	TO_DATE('11/04/2025', 'DD/MM/YYYY'),   2,  0.025),	
        (15, 2000000,	TO_DATE('19/06/2025', 'DD/MM/YYYY'),   12, 0.025),			
        (2,  8250000, 	TO_DATE('25/06/2025', 'DD/MM/YYYY'),   24, 0.02);		
 
@@ -267,7 +267,8 @@ VALUES
 (10,	11,	369194.85,	TO_DATE('01/06/2025','DD/MM/YYYY'), 'exitoso'),
 (14,	12,	120000.00,	TO_DATE('08/01/2025','DD/MM/YYYY'), 'exitoso'),
 (14,	12,	120000.00,	TO_DATE('08/02/2025','DD/MM/YYYY'), 'exitoso'),
-(14,	12,	120000.00,	TO_DATE('08/03/2025','DD/MM/YYYY'), 'exitoso'),
+(14,	12,	120000.00,	TO_DATE('08/03/2025','DD/MM/YYYY'), 'select * from loantape where extract(month from fecha) = 7 and extract(year from fecha) = 2025 and extract(day from fecha) = 31;
+exitoso'),
 (14,	12,	120000.00,	TO_DATE('08/04/2025','DD/MM/YYYY'), 'exitoso'),
 (14,	12,	120000.00,	TO_DATE('08/05/2025','DD/MM/YYYY'), 'exitoso'),
 (14,	12,	120000.00,	TO_DATE('08/06/2025','DD/MM/YYYY'), 'exitoso'),
