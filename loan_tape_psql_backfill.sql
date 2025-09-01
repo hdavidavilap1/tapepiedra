@@ -3,6 +3,7 @@ declare
    min_date date;
    max_date date;
    fecha_analysis date;
+   num_days int := 30;
 begin 
 	
 select min(fecha_creacion) into min_date from loans;
@@ -10,12 +11,15 @@ select current_date into  max_date;
 
 FOR fecha_analysis IN SELECT generate_series(min_date, max_date, '1 day'::interval) LOOP
 
+SELECT extract(days FROM date_trunc('month', fecha_analysis) + interval '1 month - 1 day') into num_days;
+
 
 
 drop table if exists  all_loans, old_loans, new_loans, aggregated_payments, payment_calculation, payment_calculation_1, aggregated_revolving, revolving_calculation;
 
 delete from loantape where fecha = fecha_analysis;
 
+RAISE NOTICE 'num_days is %',num_days;
 
 create table new_loans as 
 SELECT loan_id,
@@ -62,10 +66,10 @@ select l.loan_id,
 	   l.fecha,
 	   l.saldo_anterior_capital,
 	   l.saldo_anterior_intereses,
-	   saldo_anterior_capital *(ol.tasa_interes_ea/365) as intereses_periodo,
+	   saldo_anterior_capital *(ol.tasa_interes_ea/num_days) as intereses_periodo,
 	   coalesce(p.monto_pago,0) as monto_pago,
-	   case when p.monto_pago > 0 then greatest(p.monto_pago - saldo_anterior_intereses -  saldo_anterior_capital *(ol.tasa_interes_ea/365),0) else 0 end  as abono_capital, 
-	   case when p.monto_pago > 0 then least(p.monto_pago ,saldo_anterior_intereses + saldo_anterior_capital *(ol.tasa_interes_ea/365)) else 0 end  as abono_intereses,
+	   case when p.monto_pago > 0 then greatest(p.monto_pago - saldo_anterior_intereses -  saldo_anterior_capital *(ol.tasa_interes_ea/num_days),0) else 0 end  as abono_capital, 
+	   case when p.monto_pago > 0 then least(p.monto_pago ,saldo_anterior_intereses + saldo_anterior_capital *(ol.tasa_interes_ea/num_days)) else 0 end  as abono_intereses,
 	   0 as saldo_nuevo_capital,
        0 as saldo_nuevo_intereses
   from all_loans as l 
